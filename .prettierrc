@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json.schemastore.org/prettierrc",
+  "overrides": [
+    {
+      "files": ".prettierrc",
+      "options": { "parser": "json" }
+    },
+
+    {
+      "files": ".mustache",
+      "options": { "parser": "glimmer" }
+    }
+  ]
+}

@@ -5,7 +5,6 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 import world.array.springboot.demo.course.Course;
-import world.array.springboot.demo.course.CourseJpaRepository;
 import world.array.springboot.demo.course.springdatajpa.CourseSpringDataRepository;
 
 /**
