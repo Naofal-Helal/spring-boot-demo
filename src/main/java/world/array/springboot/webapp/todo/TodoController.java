@@ -26,12 +26,12 @@ import world.array.springboot.webapp.BindingResultExtension;
 @SessionAttributes("name")
 public class TodoController {
   @Autowired
-  TodoService todoService;
+  TodoRepository todoRepository;
 
   @GetMapping("/list-todos")
   public String listTodos(ModelMap model) {
     var username = getLoggedInUsername();
-    model.put("todos", todoService.findByUsername(username));
+    model.put("todos", todoRepository.findByUsername(username));
     return "todo/all-todos";
   }
 
@@ -71,22 +71,21 @@ public class TodoController {
       model.put("errors", errors);
       return "todo/todo";
     } else {
-      todo.setTargetDate(LocalDate.now().plusMonths(1));
       todo.setUsername(getLoggedInUsername());
-      todoService.addTodo(todo);
+      todoRepository.save(todo);
       return "redirect:/list-todos";
     }
   }
 
   @GetMapping("/delete-todo/{id}")
   public String deleteTodo(@PathVariable Long id) {
-    todoService.deleteTodo(id);
+    todoRepository.deleteById(id);
     return "redirect:/list-todos";
   }
 
   @GetMapping("/update-todo/{id}")
   public String updateTodo(ModelMap model, @PathVariable Long id) {
-    var todo = todoService.get(id).get();
+    var todo = todoRepository.findById(id).get();
     model.put("todo", todo);
     return "todo/todo";
   }
@@ -103,7 +102,11 @@ public class TodoController {
       model.put("errors", errors);
       return "todo/update-todo";
     } else {
-      todoService.updateTodo(id, todo);
+      // var oldTodo = todoRepository.findById(id).get();
+      // oldTodo.description = todo.description;
+      // oldTodo.targetDate = todo.targetDate;
+      // oldTodo.done = todo.done;
+      todoRepository.save(todo);
       return "redirect:/list-todos";
     }
   }

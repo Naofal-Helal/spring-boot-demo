@@ -45,6 +45,10 @@ public class SpringSecurityConfiguration {
     http.cors(cors -> cors.disable());
     http.csrf(csrf -> csrf.disable());
     http.headers(headers -> headers.frameOptions(frame -> frame.disable()));
+    http.formLogin(formLogin -> formLogin
+        .loginPage("/login")
+        .defaultSuccessUrl("/")
+        .failureUrl("/login?error=true"));
     return http.build();
   }
 

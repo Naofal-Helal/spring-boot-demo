@@ -15,7 +15,7 @@ import jakarta.annotation.Nullable;
 /**
  * LoginController
  */
-@Controller
+// @Controller
 @SessionAttributes("name")
 public class LoginController {
   Logger logger = LoggerFactory.getLogger(getClass());

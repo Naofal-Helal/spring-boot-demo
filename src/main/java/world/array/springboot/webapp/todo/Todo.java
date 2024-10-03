@@ -21,6 +21,9 @@ public class Todo {
   public LocalDate targetDate;
   public boolean done;
 
+  public Todo() {
+  }
+
   public Todo(long id, String username, String description, LocalDate targetDate, boolean done) {
     this.id = id;
     this.username = username;

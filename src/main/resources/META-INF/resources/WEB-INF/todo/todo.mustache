@@ -9,8 +9,9 @@
   <div class="card-body">
     <h1>Enter Todo Details</h1>
     <form action="" method="post">
-        <input type="hidden" name="id" value="0">
-        <input type="hidden" name="done" value="false">
+      <input type="hidden" name="id" value="{{#todo}}{{id}}{{/todo}}">
+      <input type="hidden" name="done" value="{{#todo}}{{done}}{{/todo}}{{^todo}}false{{/todo}}">
+      <input type="hidden" name="username" value="{{#todo}}{{username}}{{/todo}}">
       <div class="form-floating mb-3">
         <input type="text" class="form-control {{#errors.description}}is-invalid{{/errors.description}}" name="description" id="description" 
           placeholder="" value="{{#todo}}{{description}}{{/todo}}">
