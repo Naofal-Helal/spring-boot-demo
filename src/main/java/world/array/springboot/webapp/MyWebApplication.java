@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 /**
  * MyWebApplication
  */
-@SpringBootApplication
+// @SpringBootApplication
 public class MyWebApplication {
 
   public static void main(String[] args) {

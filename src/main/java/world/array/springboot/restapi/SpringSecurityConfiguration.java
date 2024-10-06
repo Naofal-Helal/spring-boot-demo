@@ -1,4 +1,4 @@
-package world.array.springboot.webapp;
+package world.array.springboot.restapi;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 import org.springframework.context.annotation.Bean;
