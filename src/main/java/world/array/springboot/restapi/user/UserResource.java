@@ -3,7 +3,7 @@ package world.array.springboot.restapi.user;
 import java.util.List;
 
 import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -19,10 +19,8 @@ import jakarta.validation.Valid;
 
 /**
  * UserResource
- * 
- * @param <T>
  */
-@RestController
+//@RestController
 public class UserResource {
 
   UserDaoService userDaoService;
@@ -53,7 +51,8 @@ public class UserResource {
       throw new UserNotFoundException();
     }
     var entityModel = EntityModel.of(user);
-    WebMvcLinkBuilder linkBuilder = new WebMvcLinkB
+    var linkBuilder = linkTo(methodOn(this.getClass()).getUsers());
+    entityModel.add(linkBuilder.withRel("all-users"));
     return entityModel;
   }
 
@@ -63,7 +62,7 @@ public class UserResource {
     var location = ServletUriComponentsBuilder
         .fromCurrentRequest()
         .path("/{id}")
-        .buildAndExpand(id)
+          .buildAndExpand(id)
         .toUri();
     return ResponseEntity.created(location).build();
   }
