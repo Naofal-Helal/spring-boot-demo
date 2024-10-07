@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 /**
  * MyRestApiApplication
  */
-//@SpringBootApplication
+@SpringBootApplication
 public class MyRestApiApplication {
   public static void main(String[] args) {
     SpringApplication.run(MyRestApiApplication.class, args);

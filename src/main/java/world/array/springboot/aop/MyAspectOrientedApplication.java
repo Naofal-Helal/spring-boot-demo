@@ -8,26 +8,22 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 import world.array.springboot.aop.business.BusinessService1;
 
-import javax.swing.*;
-
-@SpringBootApplication
-@ComponentScan()
+//@SpringBootApplication
 public class MyAspectOrientedApplication implements CommandLineRunner {
-    Logger logger = LoggerFactory.getLogger(getClass());
-    BusinessService1 businessService1;
+  Logger logger = LoggerFactory.getLogger(getClass());
+  BusinessService1 businessService1;
 
-    public MyAspectOrientedApplication(BusinessService1 businessService1) {
-        this.businessService1 = businessService1;
-    }
+  public MyAspectOrientedApplication(BusinessService1 businessService1) {
+    this.businessService1 = businessService1;
+  }
 
-    public static void main(String[] args) {
-        SpringApplication.run(MyAspectOrientedApplication.class, args);
-    }
+  public static void main(String[] args) {
+    SpringApplication.run(MyAspectOrientedApplication.class, args);
+  }
 
-    @Override
-    public void run(String... args) throws Exception {
-        logger.debug("Max Value is: {}",
-                businessService1.calculateMax()
-        );
-    }
+  @Override
+  public void run(String... args) throws Exception {
+    logger.debug("Max Value is: {}",
+        businessService1.calculateMax());
+  }
 }
