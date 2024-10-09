@@ -16,6 +16,11 @@ public class HelloWorldController {
   @Autowired
   MessageSource messageSource;
 
+  @GetMapping("/basicauth")
+  public String basicAuthCheck() {
+    return "Success";
+  }
+
   @GetMapping("/")
   public String hello() {
     return "Hello World";
