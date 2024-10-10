@@ -2,7 +2,7 @@ package world.array.springboot.restapi.jwt;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.stream.Collectors;
+import java.util.Map;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -22,18 +22,17 @@ public class JwtTokenService {
 
   public String generateToken(Authentication authentication) {
 
-    var scope = authentication
+    var roles = authentication
         .getAuthorities()
         .stream()
-        .map(GrantedAuthority::getAuthority)
-        .collect(Collectors.joining(" "));
+        .map(GrantedAuthority::getAuthority).toList();
 
     var claims = JwtClaimsSet.builder()
         .issuer("self")
         .issuedAt(Instant.now())
         .expiresAt(Instant.now().plus(90, ChronoUnit.MINUTES))
         .subject(authentication.getName())
-        .claim("scope", scope)
+        .claim("realm_access", Map.of("roles", roles))
         .build();
 
     return this.jwtEncoder

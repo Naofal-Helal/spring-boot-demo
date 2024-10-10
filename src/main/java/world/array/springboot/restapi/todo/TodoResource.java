@@ -4,6 +4,7 @@ import java.time.Duration;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -11,6 +12,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import jakarta.annotation.security.RolesAllowed;
 
 /**
  * TodoResource
@@ -39,6 +42,8 @@ public class TodoResource {
   }
 
   @GetMapping("/users/{username}/todos")
+  @PreAuthorize("#username == authentication.name")
+  @RolesAllowed({ "ADMIN", "USER" })
   public ResponseEntity<List<Todo>> retrieveTodos(@PathVariable String username) {
     var todos = repository.findByUsername(username);
     if (todos.size() == 0)
@@ -48,6 +53,8 @@ public class TodoResource {
   }
 
   @GetMapping("/users/{username}/todos/{id}")
+  @PreAuthorize("#username == authentication.name")
+  @RolesAllowed({ "ADMIN", "USER" })
   public ResponseEntity<Todo> retrieveTodo(@PathVariable String username, @PathVariable Long id) {
     var todo = repository.findById(id).orElse(null);
     if (todo == null) {

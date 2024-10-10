@@ -6,10 +6,15 @@ import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.UUID;
 
+import javax.sql.DataSource;
+
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
+import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -17,17 +22,19 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.annotation.web.configurers.oauth2.server.resource.OAuth2ResourceServerConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.jdbc.JdbcDaoImpl;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -41,7 +48,7 @@ import com.nimbusds.jose.proc.SecurityContext;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity
+@EnableMethodSecurity(jsr250Enabled = true)
 public class JwtSecurityConfig {
 
   @Bean
@@ -61,37 +68,81 @@ public class JwtSecurityConfig {
             .permitAll()
             .anyRequest()
             .authenticated())
-        .csrf(AbstractHttpConfigurer::disable)
+        .csrf(csrf -> csrf.disable())
+        // .csrf(csrf -> {
+        // csrf.ignoringRequestMatchers("/authenticate");
+        // })
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .oauth2ResourceServer(
-            OAuth2ResourceServerConfigurer::jwt)
+            o2rsc -> o2rsc.jwt(jwt -> jwt.jwtAuthenticationConverter(customJwtAuthenticationConverter())))
         .cors(
             Customizer.withDefaults())
         .httpBasic(
             Customizer.withDefaults())
         .headers(header -> {
-          header.frameOptions().sameOrigin();
+          header.frameOptions(foc -> foc.sameOrigin());
         })
+        .formLogin(Customizer.withDefaults())
         .build();
   }
 
   @Bean
   public AuthenticationManager authenticationManager(
-      UserDetailsService userDetailsService) {
+      UserDetailsService userDetailsService,
+      PasswordEncoder passwordEncoder) {
     var authenticationProvider = new DaoAuthenticationProvider();
     authenticationProvider.setUserDetailsService(userDetailsService);
+    authenticationProvider.setPasswordEncoder(passwordEncoder);
     return new ProviderManager(authenticationProvider);
   }
 
+  // @Bean
+  // public UserDetailsService inMemoryUserDetailsService() {
+  // UserDetails user = User.withUsername("user")
+  // .password("{noop}123")
+  // .authorities("read")
+  // .roles("USER")
+  // .build();
+  //
+  // return new InMemoryUserDetailsManager(user);
+  // }
+
   @Bean
-  public UserDetailsService userDetailsService() {
+  @Qualifier("authDataSource")
+  public DataSource authDataSource() {
+    return new EmbeddedDatabaseBuilder()
+        .setName("default")
+        .setType(EmbeddedDatabaseType.H2)
+        .addScript(JdbcDaoImpl.DEFAULT_USER_SCHEMA_DDL_LOCATION)
+        .build();
+  }
+
+  @Bean
+  public UserDetailsService authDetailsService(
+      @Qualifier("authDataSource") DataSource dataSource, PasswordEncoder passwordEncoder) {
     UserDetails user = User.withUsername("user")
-        .password("{noop}123")
+        // .password("{noop}123")
+        .password("123")
+        .passwordEncoder(passwordEncoder::encode)
         .authorities("read")
         .roles("USER")
         .build();
+    UserDetails admin = User.withUsername("admin")
+        // .password("{noop}123")
+        .password("123")
+        .passwordEncoder(passwordEncoder::encode)
+        .authorities("read")
+        .roles("ADMIN", "USER")
+        .build();
+    var jdbcUserDetailsManager = new JdbcUserDetailsManager(dataSource);
+    jdbcUserDetailsManager.createUser(user);
+    jdbcUserDetailsManager.createUser(admin);
+    return jdbcUserDetailsManager;
+  }
 
-    return new InMemoryUserDetailsManager(user);
+  @Bean
+  public PasswordEncoder bcryptPasswordEncoder() {
+    return new BCryptPasswordEncoder();
   }
 
   @Bean
@@ -110,6 +161,13 @@ public class JwtSecurityConfig {
     return NimbusJwtDecoder
         .withPublicKey(rsaKey().toRSAPublicKey())
         .build();
+  }
+
+  @Bean
+  public JwtAuthenticationConverter customJwtAuthenticationConverter() {
+    JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
+    converter.setJwtGrantedAuthoritiesConverter(new CustomJwtGrantedAuthoritiesConverter());
+    return converter;
   }
 
   @Bean
